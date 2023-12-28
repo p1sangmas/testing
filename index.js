@@ -227,55 +227,37 @@ app.post('/registerOwner', async function (req, res){
 //view visitor 
 /**
  * @swagger
-*paths:
-* /viewVisitor:
-*   post:
-*     summary: View Visitor Details
-*     description: Retrieve visitor details based on the provided JWT token.
-*     tags:
-*       - Visitor
-*     security:
-*       - bearerAuth: []
-*     requestBody:
-*       required: false
-*       content:
-*         application/json:
-*           schema:
-*             type: object
-*             properties:
-*               token:
-*                 type: string
-*                 description: JWT token passed in the Authorization header.
-*     responses:
-*       '200':
-*         description: Successful retrieval of visitor details.
-*         content:
-*           application/json:
-*             schema:
-*               type: object
-*               properties:
-*                 visitorDetails:
-*                    type: object
-*                    properties:
-*                     idNumber:
-*                       type: string
-*                      role:
-*                        type: string
-*        '401':
-*          description: Unauthorized - Invalid or missing token.
-*        '500':
-*          description: Internal Server Error - An error occurred while processing the request.
-*/
-app.post('/viewVisitor', async function(req, res){
-  var token = req.header('Authorization').split(" ")[1];
-  try {
-      var decoded = jwt.verify(token, privatekey);
-      console.log(decoded.role);
-      res.send(await viewVisitor(decoded.idNumber, decoded.role));
-    } catch(err) {
-      res.send("Error!");
+ * /viewVisitor:
+ *   get:
+ *     summary: View list of visitors
+ *     description: Retrieve a list of visitors (accessible to owners and security personnel)
+ *     tags: [Owner, Security, Visitor]
+ *     security:
+ *        bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: List of visitors retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       '401':
+ *         description: Unauthorized - Invalid or missing token
+ *       '403':
+ *         description: Forbidden - User does not have access to view visitors
+ */
+app.get('/viewVisitor', verifyToken, async function(req, res) {
+    const role = req.user.role;  // Access role from decoded JWT payload
+    if (role === 'owner' || role === 'security') {
+      // Proceed with the logic to view visitors
+      const visitors = await viewVisitor(req.user.idNumber, role);
+      res.json(visitors);
+    } else {
+      res.status(403).send('Forbidden');
     }
-});
+  });
 
 //register visitor
 /**
@@ -482,7 +464,7 @@ async function loginVisitor(res, idNumber, password){
 }
 
 //READ(view all visitors)
-/*async function viewVisitor(idNumber, role){
+async function viewVisitor(idNumber, role){
   var exist;
   await client.connect();
   if(role == "owner" || role == "security"){
@@ -490,17 +472,6 @@ async function loginVisitor(res, idNumber, password){
   }
   else if(role == "visitor"){
     exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: idNumber});
-  }
-  return exist;
-}*/
-
-async function viewVisitor(idNumber, role){
-  var exist;
-  await client.connect();
-  if(role == "admin" || role == "staff" || role == "security"){
-      exist = client.db("assignmentCondo").collection("security").find({}).toArray();
-  }else if (role == "Guest"){
-      exist = await client.db("assignmentCondo").collection("security").findOne({idNumber:idNumber});
   }
   return exist;
 }
