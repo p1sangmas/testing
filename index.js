@@ -227,27 +227,45 @@ app.post('/registerOwner', async function (req, res){
 //view visitor 
 /**
  * @swagger
- * /viewVisitor:
- *   get:
- *     summary: View list of visitors
- *     description: Retrieve a list of visitors (accessible to owners and security personnel)
- *     tags: [Owner, Security, Visitor]
- *     security:
- *        bearerAuth: []
- *     responses:
- *       '200':
- *         description: List of visitors retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *       '401':
- *         description: Unauthorized - Invalid or missing token
- *       '403':
- *         description: Forbidden - User does not have access to view visitors
- */
+*paths:
+* /viewVisitor:
+*   post:
+*     summary: View Visitor Details
+*     description: Retrieve visitor details based on the provided JWT token.
+*     tags:
+*       - Visitor
+*     security:
+*       - bearerAuth: []
+*     requestBody:
+*       required: false
+*       content:
+*         application/json:
+*           schema:
+*             type: object
+*             properties:
+*               token:
+*                 type: string
+*                 description: JWT token passed in the Authorization header.
+*     responses:
+*       '200':
+*         description: Successful retrieval of visitor details.
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 visitorDetails:
+*                    type: object
+*                    properties:
+*                     idNumber:
+*                       type: string
+*                      role:
+*                        type: string
+*        '401':
+*          description: Unauthorized - Invalid or missing token.
+*        '500':
+*          description: Internal Server Error - An error occurred while processing the request.
+*/
 app.post('/viewVisitor', async function(req, res){
   var token = req.header('Authorization').split(" ")[1];
   try {
