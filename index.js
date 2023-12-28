@@ -248,16 +248,16 @@ app.post('/registerOwner', async function (req, res){
  *       '403':
  *         description: Forbidden - User does not have access to view visitors
  */
-app.get('/viewVisitor', verifyToken, async function(req, res) {
-    const role = req.user.role;  // Access role from decoded JWT payload
-    if (role === 'owner' || role === 'security') {
-      // Proceed with the logic to view visitors
-      const visitors = await viewVisitor(req.user.idNumber, role);
-      res.json(visitors);
-    } else {
-      res.status(403).send('Forbidden');
+app.post('/viewVisitor', async function(req, res){
+  var token = req.header('Authorization').split(" ")[1];
+  try {
+      var decoded = jwt.verify(token, privatekey);
+      console.log(decoded.role);
+      res.send(await viewVisitor(decoded.idNumber, decoded.role));
+    } catch(err) {
+      res.send("Error!");
     }
-  });
+});
 
 //register visitor
 /**
@@ -464,7 +464,7 @@ async function loginVisitor(res, idNumber, password){
 }
 
 //READ(view all visitors)
-async function viewVisitor(idNumber, role){
+/*async function viewVisitor(idNumber, role){
   var exist;
   await client.connect();
   if(role == "owner" || role == "security"){
@@ -472,6 +472,17 @@ async function viewVisitor(idNumber, role){
   }
   else if(role == "visitor"){
     exist = await client.db("assignmentCondo").collection("visitor").findOne({idNumber: idNumber});
+  }
+  return exist;
+}*/
+
+async function viewVisitor(idNumber, role){
+  var exist;
+  await client.connect();
+  if(role == "admin" || role == "staff" || role == "security"){
+      exist = client.db("assignmentCondo").collection("security").find({}).toArray();
+  }else if (role == "Guest"){
+      exist = await client.db("assignmentCondo").collection("security").findOne({idNumber:idNumber});
   }
   return exist;
 }
