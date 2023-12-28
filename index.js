@@ -233,7 +233,7 @@ app.post('/registerOwner', async function (req, res){
  *     description: Retrieve a list of visitors (accessible to owners and security personnel)
  *     tags: [Owner, Security, Visitor]
  *     security:
- *       - bearerAuth: []
+ *        bearerAuth: []
  *     responses:
  *       '200':
  *         description: List of visitors retrieved successfully
