@@ -242,15 +242,16 @@ app.post('/registerOwner', async function (req, res){
  *       '403':
  *         description: Forbidden - User does not have access to view visitors
  */
-app.get('/viewVisitor', async function(req, res){
-  await client.connect()
-  let header = req.headers.authorization;
-  let token = header.split(' ')[1];
-  jwt.verify(token, privatekey);
-    console.log(decoded.role);
-      res.send(await viewVisitor(decoded.idNumber, decoded.role));
-  }
-);
+app.get('/viewVisitor', verifyToken, async function(req, res) {
+    const role = req.user.role;  // Access role from decoded JWT payload
+    if (role === 'owner' || role === 'security') {
+      // Proceed with the logic to view visitors
+      const visitors = await viewVisitor(req.user.idNumber, role);
+      res.json(visitors);
+    } else {
+      res.status(403).send('Forbidden');
+    }
+  });
 
 //register visitor
 /**
@@ -610,20 +611,21 @@ async function generateHash(password){
 
 //Verify JWT Token
 function verifyToken(req, res, next) {
-  let header = req.headers.authorization;
-
-  if (!header) {
-    return res.status(401).send('Unauthorized');
-  }
-
-  let token = header.split(' ')[1];
-
-  jwt.verify(token, 'PRXgaming', function(err, decoded) {
-    if (err) {
-      console.error(err);
-      return res.status(401).send('Invalid token');
+    let header = req.headers.authorization;
+  
+    if (!header) {
+      return res.status(401).send('Unauthorized');
     }
-    res.user = decoded;
-    next();
-  });
-}
+  
+    let token = header.split(' ')[1];
+  
+    jwt.verify(token, 'PRXWGaming"', function(err, decoded) {
+      if (err) {
+        console.error(err);
+        return res.status(401).send('Invalid token');
+      }
+      req.user = decoded;  // Attach decoded user data to request object
+      next();
+    });
+  }
+  

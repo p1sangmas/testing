@@ -1,0 +1,2 @@
+GET http://localhost:3000/viewVisitor
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZE51bWJlciI6IjIwMjIzMTEzIiwicm9sZSI6InNlY3VyaXR5IiwiaWF0IjoxNjg3OTYwMzM4fQ.8H2SFoZ7wTS-a5diLydk2-TI3vH9Nvg5PkcTKgwc88Q
